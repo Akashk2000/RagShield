@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile | RagShield</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- AOS CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    html, body { height:100%; margin:0; }
+    body { display:flex; flex-direction:column; }
+    main { flex:1; }
+
+    .profile-card {
+      max-width:400px; margin:auto;
+      border-radius:.75rem; box-shadow:0 4px 16px rgba(0,0,0,0.1);
+    }
+    .profile-pic {
+      width:120px; height:120px; object-fit:cover;
+      border-radius:50%; border:4px solid #0d6efd;
+    }
+    .stat-card .card-body { text-align:center; }
+    .reports-table th, .reports-table td { vertical-align:middle; }
+    #emergencyBtn {
+      position:fixed; bottom:20px; right:20px;
+      background:#dc3545; color:#fff; border:none;
+      border-radius:50%; padding:15px; font-size:20px;
+      box-shadow:0 4px 8px rgba(0,0,0,0.3); z-index:1050;
+      transition:transform .2s;
+    }
+    #emergencyBtn:hover { transform:scale(1.1); background:#c82333; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('index.html') }}">RagShield</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('report.html') }}">Report Incident</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login.html') }}">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container my-5" data-aos="fade-up">
+    <!-- Profile Card -->
+    <div class="profile-card p-4 text-center mb-5" data-aos="fade-down">
+      {% if user.id_card %}
+        <img src="{{ url_for('static',filename='uploads/'+user.id_card) }}"
+             alt="ID Card" class="profile-pic mb-3">
+      {% else %}
+        <img src="{{ url_for('static',filename='images/profile-placeholder.png') }}"
+             alt="Profile" class="profile-pic mb-3">
+      {% endif %}
+      <h2>{{ user.name }}</h2>
+      <p class="text-muted">{{ user.email }}</p>
+      <p><strong>College:</strong> {{ user.college_name }}</p>
+      <p><strong>Member since:</strong> {{ user.registration_date }}</p>
+      <a href="{{ url_for('register.html') }}" class="btn btn-outline-primary btn-sm mt-3">
+        <i class="fas fa-edit"></i> Edit Profile
+      </a>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5" data-aos="fade-up">
+      <div class="col-md-4">
+        <div class="card stat-card text-white bg-primary mb-3">
+          <div class="card-body">
+            <h5><i class="fas fa-file-alt"></i> Total Reports</h5>
+            <p class="display-6">{{ stats.total_reports }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card text-white bg-warning mb-3">
+          <div class="card-body">
+            <h5><i class="fas fa-clock"></i> Pending</h5>
+            <p class="display-6">{{ stats.pending_reports }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card text-white bg-success mb-3">
+          <div class="card-body">
+            <h5><i class="fas fa-check-circle"></i> Resolved</h5>
+            <p class="display-6">{{ stats.resolved_reports }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incident History Table -->
+    <div data-aos="fade-up">
+      <h3 class="mb-3">Your Incident History</h3>
+      {% if incidents %}
+        <div class="table-responsive">
+          <table class="table table-striped reports-table">
+            <thead>
+              <tr><th>Date</th><th>Description</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {% for rpt in incidents %}
+              <tr>
+                <td>{{ rpt.report_date }}</td>
+                <td>{{ rpt.description|truncate(50) }}</td>
+                <td>
+                  {% if rpt.status=='pending' %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  {% else %}
+                    <span class="badge bg-success">Resolved</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{{ url_for('view_report',id=rpt.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted">You haven’t reported any incidents yet.</p>
+      {% endif %}
+    </div>
+  </main>
+
+  <!-- Emergency Button -->
+  <button id="emergencyBtn" data-bs-toggle="modal" data-bs-target="#emergencyModal">
+    <i class="fas fa-exclamation-triangle"></i>
+  </button>
+
+  <!-- Emergency Modal -->
+  <div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Emergency</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Send emergency alert with your current location?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button id="confirmEmergency" type="button" class="btn btn-danger btn-sm">Yes, Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="position-fixed top-0 end-0 p-3"></div>
+
+  <!-- Footer -->
+  <footer class="bg-primary text-white text-center py-3 mt-auto">
+    <small>&copy; 2025 RagShield. All Rights Reserved.</small>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init();
+
+    function showToast(msg,type='success'){
+      const wrapper=document.createElement('div');
+      wrapper.innerHTML=`<div class="toast align-items-center text-white bg-${type} border-0 mb-2" role="alert">
+          <div class="d-flex">
+            <div class="toast-body">${msg}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>`;
+      document.getElementById('toastContainer').append(wrapper);
+      const bsToast=new bootstrap.Toast(wrapper.querySelector('.toast'),{delay:3000});
+      bsToast.show();
+      wrapper.querySelector('.toast').addEventListener('hidden.bs.toast',()=>wrapper.remove());
+    }
+
+    document.getElementById('confirmEmergency').addEventListener('click',()=>{
+      if(!navigator.geolocation){ showToast('Geolocation not supported','danger'); return; }
+      navigator.geolocation.getCurrentPosition(pos=>{
+        fetch('{{ url_for("emergency") }}',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({latitude:pos.coords.latitude,longitude:pos.coords.longitude})})
+        .then(()=>showToast('Emergency alert sent!','success'))
+        .catch(()=>showToast('Failed to send alert','danger'));
+      },()=>showToast('Unable to retrieve location','danger'));
+      bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+    });
+  </script>
+</body>
+</html>

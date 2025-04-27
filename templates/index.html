@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="RagShield is an initiative to create a safe, ragging-free campus for students. Join the movement to report incidents and ensure student safety.">
+    <meta name="keywords" content="anti-ragging, student safety, campus, RagShield, zero tolerance, harassment, UGC">
+    <meta name="author" content="RagShield Team">
+
+    <title>RagShield | Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/emergency.js') }}"></script>
+    <!-- Optional: Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Example inline styles for the hero section */
+        .hero {
+            background: url('/static/images/ragging.jpg') no-repeat center center;
+            background-size: cover;
+            height: 60vh;
+            position: relative;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: -1;
+        }
+        .hero-content h1,
+        .hero-content p {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+         /* Blinking effect */
+        @keyframes blink {
+            0% {
+            opacity: 1;
+            }
+            50% {
+            opacity: 0.7;
+            }
+            100% {
+            opacity: 1;
+            }
+        }
+
+        .alert {
+            animation: blink 1.5s infinite; /* Apply blinking every 1.5s */
+        }
+
+        /* Optional: Add a slightly larger font size for emphasis */
+        .alert {
+            font-size: 1.1rem;
+        }
+
+        /* Base transition for the entire card */
+        .founder-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* On hover, lift the card and intensify its shadow */
+        .founder-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* (Optional) also make the founder’s name change color on hover */
+        .founder-card:hover h4 {
+        color: #0d6efd; /* Bootstrap primary blue */
+        }
+
+    </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">RagShield</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Public navigation -->
+          <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero d-flex align-items-center">
+    <div class="hero-overlay"></div>
+    <div class="container text-center hero-content">
+      <h1 class="display-3 fw-bold">Empowering Students</h1>
+      <p class="lead">Combating Ragging and Ensuring Safety</p>
+      <div class="mt-4">
+        <a href="/register" class="btn btn-warning btn-lg mx-2">Register Now</a>
+        <a href="/login" class="btn btn-secondary btn-lg mx-2">Login</a>
+      </div>
+    </div>
+  </section>
+
+    <!-- Important Alerts Section -->
+    <section class="container my-5" data-aos="fade-up">
+    <h2 class="text-center mb-4">Important Alerts</h2>
+  
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Zero Tolerance Policy:</strong> Any involvement in ragging activities will result in immediate suspension and legal action.
+    </div>
+  
+    <div class="alert alert-warning" role="alert">
+      <i class="fas fa-phone"></i> <strong>24/7 Anti-Ragging Helpline:</strong> Students can call <a href="tel:18001805522" class="text-decoration-underline">1800-180-5522</a> for confidential support.
+    </div>
+  
+    <div class="alert alert-info" role="alert">
+      <i class="fas fa-info-circle"></i> <strong>Orientation Session:</strong> New students are requested to attend the Anti-Ragging Awareness Session on <strong>July 5, 2025</strong>.
+    </div>
+  
+    <div class="alert alert-success" role="alert">
+      <i class="fas fa-shield-alt"></i> <strong>Safe Campus Promise:</strong> Our campus is a recognized "Ragging-Free Zone" certified by UGC.
+    </div>
+    </section>
+  
+    <!-- About and Founders Section -->
+    <section class="container my-5" data-aos="fade-up">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h2>About RagShield</h2>
+            <p>At RagShield, we believe that education should be a journey of growth, not fear. Founded with a passion to eliminate the menace of ragging, RagShield offers students a safe, trusted platform to raise their voices and seek immediate help when needed.</p>
+      
+            <p>Our initiative is built on the principles of <strong>confidentiality, empowerment, and action</strong>. Through a user-friendly interface, we enable students to report incidents anonymously, access verified anti-ragging guidelines based on UGC and government mandates, and connect to emergency assistance whenever necessary.</p>
+      
+            <p>We are not just a reporting platform — we are a <strong>community-driven movement</strong> to create safer, kinder campuses where every student feels respected and protected.</p>
+          </div>
+          <div class="col-md-6 text-center">
+            <img src="https://www.view.edu.in/images/anti//anti.jpg" alt="Safe Campus" class="img-fluid rounded shadow" style="max-height:400px; object-fit:cover;">
+            <p class="mt-3 fst-italic text-muted">"Together we stand. Together we shield."</p>
+          </div>
+        </div>
+      
+        <!-- Mission, Vision, and Core Values -->
+        <div class="row text-center mt-5">
+          <div class="col-md-4">
+            <div class="p-4 shadow rounded bg-white">
+              <i class="fas fa-bullseye fa-2x text-primary mb-3"></i>
+              <h5>Our Mission</h5>
+              <p class="text-muted">To eradicate ragging by empowering students with knowledge, voice, and immediate support mechanisms.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 shadow rounded bg-white">
+              <i class="fas fa-eye fa-2x text-success mb-3"></i>
+              <h5>Our Vision</h5>
+              <p class="text-muted">A future where every campus is a beacon of safety, inclusion, and dignity for all learners.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-4 shadow rounded bg-white">
+              <i class="fas fa-handshake fa-2x text-warning mb-3"></i>
+              <h5>Our Core Values</h5>
+              <p class="text-muted">Trust, Confidentiality, Immediate Action, Empathy, and Empowerment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+           
+
+    <!-- Founders' Message Section -->
+    <section class="bg-light py-5" data-aos="fade-up">
+        <div class="container">
+          <h2 class="text-center mb-5">What Our Founders Say</h2>
+          <div class="row g-5">
+            <div class="col-md-6 text-center">
+              <div class="founder-card p-4 shadow rounded">
+                <img src="/static/images/akash.png" class="rounded-circle mb-3" alt="Akash Khadka" style="width:100px; height:100px; object-fit:cover;">
+                <h4>Akash Khadka</h4>
+                <p class="text-muted fst-italic">"Every student deserves a safe space to learn, grow, and thrive without fear. RagShield is our commitment to make campuses safer, one report at a time."</p>
+              </div>
+            </div>
+            <div class="col-md-6 text-center">
+              <div class="founder-card p-4 shadow rounded">
+                <img src="/static/images/bipin.png" class="rounded-circle mb-3" alt="Bipin Pandey" style="width:100px; height:100px; object-fit:cover;">
+                <h4>Bipin Pandey</h4>
+                <p class="text-muted fst-italic">"Silence encourages the tormentor, never the tormented. Through RagShield, we aim to give every voice the power to stand tall against ragging."</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+  
+  
+  <!-- Anti-Ragging Guidelines Section -->
+  <section class="container my-5" data-aos="fade-up">
+    <div class="row">
+      <div class="col-md-12">
+        <h2 class="mb-4">Anti-Ragging Guidelines</h2>
+        <div class="accordion" id="guidelinesAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                Steps to Report Ragging
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guidelinesAccordion">
+              <div class="accordion-body">
+                <ul>
+                  <li>Immediately document the incident with time, place, and people involved.</li>
+                  <li>Report confidentially via RagShield or directly to campus authorities.</li>
+                  <li>Follow up with assigned anti-ragging committees and mentors.</li>
+                  <li>In severe cases, escalate to police or Anti-Ragging Helpline (1800-180-5522).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+  
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                What to Do if You Face Ragging
+              </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse">
+              <div class="accordion-body">
+                <ul>
+                  <li>Stay calm, prioritize your safety, and move to a secure area if needed.</li>
+                  <li>Immediately inform someone you trust — senior faculty, warden, or RagShield helpline.</li>
+                  <li>Save evidence if possible (audio, video, messages).</li>
+                  <li>Do not retaliate physically. Focus on safely escaping and informing authorities.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+  
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                Government Policies Against Ragging
+              </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse">
+              <div class="accordion-body">
+                <ul>
+                  <li>UGC Regulations 2009: Ragging is banned and is a criminal offense.</li>
+                  <li>Institutions are required to lodge FIRs in serious cases under IPC Sections 339, 340, 341, 506, etc.</li>
+                  <li>Strict penalties include suspension, rustication, expulsion, and imprisonment up to 3 years.</li>
+                  <li>Mandatory display of Anti-Ragging posters in campuses and hostels.</li>
+                </ul>
+                <small>Source: UGC Anti-Ragging Regulations (www.antiragging.in)</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+     <!-- Success Stories Section -->
+     <section class="container my-5" data-aos="fade-up">
+        <h2 class="text-center mb-5">Success Stories</h2>
+      
+        <div class="row">
+          <!-- Story 1 -->
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+              <img src="/static/images/Rishav.png" class="card-img-top" alt="Student 1" style="height:250px; object-fit:cover;">
+              <div class="card-body">
+                <h5 class="card-title">Rishav Paudel</h5>
+                <h6 class="card-subtitle mb-2 text-muted">XYZ University</h6>
+                <p class="card-text">"Thanks to RagShield, I could report an incident anonymously and received immediate help. I feel safe and empowered on campus now!"</p>
+              </div>
+            </div>
+          </div>
+      
+          <!-- Story 2 -->
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+              <img src="/static/images/Sneha.jpg" class="card-img-top" alt="Student 2" style="height:250px; object-fit:cover;">
+              <div class="card-body">
+                <h5 class="card-title">Sneha Thapa</h5>
+                <h6 class="card-subtitle mb-2 text-muted">ABC Institute of Technology</h6>
+                <p class="card-text">"When I faced harassment during my first week, RagShield connected me to counselors and authorities. Today, I mentor juniors with confidence."</p>
+              </div>
+            </div>
+          </div>
+      
+          <!-- Story 3 -->
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+              <img src="/static/images/Amar.png" class="card-img-top" alt="Student 3" style="height:250px; object-fit:cover;">
+              <div class="card-body">
+                <h5 class="card-title">Amar Raw</h5>
+                <h6 class="card-subtitle mb-2 text-muted">PQR Medical College</h6>
+                <p class="card-text">"RagShield gave me the courage to speak up. It's not just an app, it's a movement for safer campuses everywhere!"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        </section>
+      
+        <!-- Call to Action Section -->
+        <section class="bg-warning text-center py-5" data-aos="zoom-in">
+        <div class="container">
+          <h2 class="fw-bold mb-3">Be the Next Success Story!</h2>
+          <p class="lead mb-4">Join thousands of students who chose safety, empowerment, and freedom. Report incidents, seek help, and inspire change.</p>
+          <a href="register.html" class="btn btn-primary btn-lg">Register Now</a>
+        </div>
+        </section>
+      
+
+  <!-- Footer -->
+  <footer class="bg-primary text-white text-center py-4">
+    <div class="container">
+      <p>&copy; 2025 RagShield. All Rights Reserved.</p>
+      <p>Contact us: 
+        <a href="mailto:support@ragshield.com" class="text-white"><i class="fas fa-envelope"></i> support@ragshield.com</a>
+      </p>
+      <p>Phone: 
+        <a href="tel:+919999999999" class="text-white"><i class="fas fa-phone-alt"></i> +91 99999 99999</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

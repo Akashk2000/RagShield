@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Report Incident | RagShield</title>
+
+  <!-- Leaflet CSS (must come first) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha384-sA+zgD1vy+SbI4yxfQW64szY02ypjwtLwbFyhRdn+4h+rQ3xMpruLVNNwMLyJmZg"
+    crossorigin=""
+  />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css"/>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { display: flex; flex-direction: column; }
+    main { flex: 1; }
+
+    /* Force map height */
+    #map { height: 300px !important; width: 100%; border:1px solid #ccc; border-radius:8px; }
+
+    /* Fade-in */
+    .fade-in { opacity:0; transform:translateY(20px); animation:fadeIn 0.8s ease-out forwards; }
+    @keyframes fadeIn { to { opacity:1; transform:translateY(0); } }
+
+    /* Rounded inputs/buttons */
+    .form-control, .btn-danger, .btn-outline-primary { border-radius:25px; }
+    .form-label { font-weight:500; }
+
+    /* Toast */
+    .toast { position:fixed; top:20px; right:20px; z-index:9999; display:none; }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/">RagShield</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Report Incident Form -->
+  <main class="container my-5 fade-in">
+    <h1 class="text-center mb-4 text-danger">Report an Incident</h1>
+    <p class="text-warning text-center mb-4">
+      <strong>Note:</strong> Submitting false information is strictly prohibited and may lead to consequences.
+    </p>
+
+    <form id="reportForm" method="POST" action="report.html" enctype="multipart/form-data">
+      <!-- Description (required) -->
+      <div class="mb-3">
+        <label for="description" class="form-label">Incident Description</label>
+        <textarea class="form-control" id="description" name="description" rows="5" required placeholder="Describe the incident..."></textarea>
+      </div>
+
+      <!-- Location with map + visible required field -->
+      <div class="mb-3">
+        <label class="form-label">Location of Incident <span class="text-danger">*</span></label>
+        <div id="map"></div>
+        <div class="d-flex justify-content-between mt-2">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="locateBtn">
+            <i class="fas fa-location-arrow"></i> Use my location
+          </button>
+          <small class="form-text text-muted">Or drag the marker to the exact spot.</small>
+        </div>
+        <!-- Visible readonly input to enforce required -->
+        <input type="text" id="locationInput" class="form-control mt-2" placeholder="Pick a location on the map" readonly required>
+        <input type="hidden" id="lat" name="latitude">
+        <input type="hidden" id="lng" name="longitude">
+      </div>
+
+      <!-- File upload (required) -->
+      <div class="mb-3">
+        <label for="files" class="form-label">Upload Supporting File <span class="text-danger">*</span></label>
+        <input type="file" class="form-control" id="files" name="files" accept="image/*,video/*" required>
+        <small class="form-text text-muted">One image or video is required to support your report.</small>
+      </div>
+
+      <button type="submit" class="btn btn-danger w-100">Submit Report</button>
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-primary text-white text-center py-4">
+    <div class="container">
+      <p>&copy; 2025 RagShield. All Rights Reserved.</p>
+      <p>
+        Contact us:
+        <a href="mailto:support@ragshield.com" class="text-white"><i class="fas fa-envelope"></i> support@ragshield.com</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div class="toast bg-success text-white" id="toastMessage" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-body"><span id="toastText"></span></div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha384-Uu1D5uxRq6kR/UPvgtTH1ycQm/zbzd8NigUcLFIs9qcqj/gSPMMD3/K2CEazPnY7"
+    crossorigin=""
+  ></script>
+
+  <script>
+    // Initialize map
+    var map = L.map('map').setView([27.7,85.3],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap' }).addTo(map);
+
+    // Draggable marker
+    var marker = L.marker([27.7,85.3],{draggable:true}).addTo(map);
+    marker.on('move',function(e){
+      var ll=e.target.getLatLng();
+      document.getElementById('lat').value=ll.lat;
+      document.getElementById('lng').value=ll.lng;
+      document.getElementById('locationInput').value=ll.lat.toFixed(5)+', '+ll.lng.toFixed(5);
+    });
+
+    // Use my location
+    document.getElementById('locateBtn').addEventListener('click',function(){
+      if(!navigator.geolocation) return alert('Geolocation not supported');
+      navigator.geolocation.getCurrentPosition(function(pos){
+        var lat=pos.coords.latitude, lon=pos.coords.longitude;
+        map.setView([lat,lon],16);
+        marker.setLatLng([lat,lon]).fire('move');
+      },()=>alert('Unable to retrieve location'));
+    });
+
+    // Ensure map redraw after fade-in
+    map.whenReady(()=>setTimeout(()=>map.invalidateSize(),800));
+
+    // Toast helper
+    function showToast(msg,type='success'){
+      var t=document.getElementById('toastMessage'),
+          txt=document.getElementById('toastText');
+      t.className='toast bg-'+type+' text-white';
+      txt.textContent=msg; t.style.display='block';
+      setTimeout(()=>t.style.display='none',3000);
+    }
+
+    // Form validation
+    document.getElementById('reportForm').addEventListener('submit',function(e){
+      var desc=document.getElementById('description').value.trim(),
+          loc=document.getElementById('locationInput').value.trim(),
+          files=document.getElementById('files').files;
+      if(!desc){ e.preventDefault(); showToast('Please enter a description.','danger'); return; }
+      if(!loc){ e.preventDefault(); showToast('Please pick a location on the map.','danger'); return; }
+      if(files.length===0){ e.preventDefault(); showToast('Please upload a supporting file.','danger'); return; }
+      showToast('Incident Reported Successfully!','success');
+    });
+  </script>
+</body>
+</html>

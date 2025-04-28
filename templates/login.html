@@ -68,7 +68,7 @@
    
   <main class="container my-5 fade-in">
     <h1 class="text-center mb-4">Login</h1>
-    <form method="POST" action="login.html" id="loginForm">
+    <form method="POST" action="/login" id="loginForm">
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
         <input type="email" class="form-control" id="email" name="email" required placeholder="Enter your email">
@@ -109,12 +109,20 @@
     const loginBtn = document.getElementById('loginBtn');
 
     loginBtn.addEventListener('click', function(e) {
+      // Allow form submission to proceed normally
+      // Remove spinner and enable button after 5 seconds as fallback
       const loginText = document.getElementById('loginText');
       const loginSpinner = document.getElementById('loginSpinner');
 
       loginText.textContent = 'Logging in...';
       loginSpinner.classList.remove('d-none');
       loginBtn.disabled = true;
+
+      setTimeout(() => {
+        loginText.textContent = 'Login';
+        loginSpinner.classList.add('d-none');
+        loginBtn.disabled = false;
+      }, 5000);
     });
   </script>
 </body>

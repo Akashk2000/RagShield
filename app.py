@@ -1,7 +1,9 @@
 import os
 import requests
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
+import logging
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize Flask app with static folder
 app = Flask(__name__, static_folder='static')
@@ -18,6 +20,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Configure SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+import secrets
+
+app.secret_key = secrets.token_hex(16)  # Set a strong random secret key for session and flash
 db = SQLAlchemy(app)
 
 # Define models
@@ -99,9 +104,82 @@ def emergency_alert():
     else:
         return jsonify({"success": False, "message": "Failed to send notification."}), 500
 
-@app.route('/register')
+from sqlalchemy.exc import IntegrityError
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        # Get form data
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        college_name = request.form.get('college_name')
+        id_card = request.files.get('id_card')
+
+        # Save the uploaded ID card
+        id_card_filename = None
+        if id_card:
+            # Save with unique filename to avoid overwriting
+            import uuid
+            ext = os.path.splitext(id_card.filename)[1]
+            id_card_filename = f"{uuid.uuid4().hex}{ext}"
+            id_card_path = os.path.join(app.config['UPLOAD_FOLDER'], id_card_filename)
+            id_card.save(id_card_path)
+
+        # Save the user to the database
+        new_user = User(
+            name=name,
+            email=email,
+            password=generate_password_hash(password),  # Hash password for security
+            college_name=college_name,
+            id_card=id_card_filename
+        )
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('Email already registered. Please use a different email.', 'danger')
+            return redirect(url_for('register'))
+
+    # Render the registration form for GET requests
     return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password, password):
+            # Successful login
+            session['user_id'] = user.id
+            logging.info(f"User {email} logged in successfully.")
+            return redirect(url_for('profile'))
+        else:
+            logging.warning(f"Failed login attempt for email: {email}")
+            flash('Invalid email or password. Please try again.', 'danger')
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+@app.route('/profile')
+def profile():
+    user_id = session.get('user_id')
+    app.logger.debug(f"profile route accessed, session user_id: {user_id}")
+    if not user_id:
+        flash('Please log in to access your profile.', 'warning')
+        return redirect(url_for('login'))
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+    return render_template('profile.html', user=user)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

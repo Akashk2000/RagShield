@@ -158,7 +158,8 @@ def login():
         if user and check_password_hash(user.password, password):
             # Successful login
             session['user_id'] = user.id
-            logging.info(f"User {email} logged in successfully.")
+            logging.info(f"User {email} logged in successfully. Session user_id set to {user.id}")
+            print(f"DEBUG: User {email} logged in, session user_id: {session.get('user_id')}")
             return redirect(url_for('profile'))
         else:
             logging.warning(f"Failed login attempt for email: {email}")
@@ -171,6 +172,7 @@ def login():
 def profile():
     user_id = session.get('user_id')
     app.logger.debug(f"profile route accessed, session user_id: {user_id}")
+    print(f"DEBUG: profile route accessed, session user_id: {user_id}")
     if not user_id:
         flash('Please log in to access your profile.', 'warning')
         return redirect(url_for('login'))
@@ -180,6 +182,13 @@ def profile():
         return redirect(url_for('login'))
     return render_template('profile.html', user=user)
 
+
+from flask import session
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

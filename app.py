@@ -73,6 +73,8 @@ def upload_file():
         file.save(filepath)
         return jsonify({"success": True, "message": "File uploaded successfully!"}), 200
 
+from flask import session
+
 @app.route('/emergency', methods=['POST'])
 def emergency_alert():
     data = request.json
@@ -82,8 +84,18 @@ def emergency_alert():
     if not latitude or not longitude:
         return jsonify({"success": False, "message": "Invalid location data"}), 400
 
-    # Format the message
-    message = f"🚨 Emergency Alert!\nLocation: https://www.google.com/maps?q={latitude},{longitude}"
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"success": False, "message": "User not logged in"}), 401
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"success": False, "message": "User not found"}), 404
+
+    college_name = user.college_name
+
+    # Format the message with college name
+    message = f"🚨 Emergency Alert!\nCollege: {college_name}\nLocation: https://www.google.com/maps?q={latitude},{longitude}"
 
     # Send message to Telegram
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -91,7 +103,12 @@ def emergency_alert():
         'chat_id': TELEGRAM_CHAT_ID,
         'text': message
     }
-    response = requests.post(url, json=payload)
+    try:
+        response = requests.post(url, json=payload)
+        app.logger.info(f"Telegram API response status: {response.status_code}, response text: {response.text}")
+    except Exception as e:
+        app.logger.error(f"Error sending message to Telegram: {e}")
+        return jsonify({"success": False, "message": "Failed to send notification due to exception."}), 500
 
     if response.status_code == 200:
         return jsonify({"success": True, "message": "Notification sent!"}), 200

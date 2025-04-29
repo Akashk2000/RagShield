@@ -242,7 +242,7 @@
     document.getElementById('confirmEmergency').addEventListener('click',()=>{
       if(!navigator.geolocation){ showToast('Geolocation not supported','danger'); return; }
       navigator.geolocation.getCurrentPosition(pos=>{
-        fetch('{{ url_for("logout") }}',{method:'POST',headers:{'Content-Type':'application/json'},
+        fetch('{{ url_for("emergency_alert") }}',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({latitude:pos.coords.latitude,longitude:pos.coords.longitude})})
         .then(()=>showToast('Emergency alert sent!','success'))
         .catch(()=>showToast('Failed to send alert','danger'));

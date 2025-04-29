@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, f
 import logging
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer
 
 # Initialize Flask app with static folder
 app = Flask(__name__, static_folder='static')
@@ -21,8 +22,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 import secrets
-
 app.secret_key = secrets.token_hex(16)  # Set a strong random secret key for session and flash
+serializer = URLSafeTimedSerializer(app.secret_key)
+
 db = SQLAlchemy(app)
 
 # Define models
@@ -217,9 +219,12 @@ def profile():
 
 from flask import session
 
+from flask import flash
+
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('Successfully logged out.', 'success')
     return redirect(url_for('login'))
 
 @app.route('/report_incident', methods=['GET', 'POST'])
@@ -260,14 +265,92 @@ def report_incident():
 
     return render_template('report.html')
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email_via_mailtrap(to_email, subject, html_content):
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = EMAIL_SENDER
+    msg['To'] = to_email
+    msg.attach(MIMEText(html_content, 'html'))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, to_email, msg.as_string())
+            app.logger.info("Email sent successfully via Gmail SMTP.")
+    except Exception as e:
+        app.logger.error(f"Error sending email via Gmail SMTP: {e}")
+        raise
+
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email')
-        # Here you can add logic to handle password reset, e.g., send reset email
-        flash('If this email is registered, a password reset link has been sent.', 'info')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Generate token valid for 1 hour (3600 seconds)
+            token = serializer.dumps(email, salt='password-reset-salt')
+            reset_url = url_for('reset_password', token=token, _external=True)
+            app.logger.info(f"DEBUG: Reset URL: {reset_url}")
+
+            # Compose email HTML content
+            html = f"""
+            <p>Hello,</p>
+            <p>You requested a password reset. Click the link below to reset your password:</p>
+            <p><a href="{reset_url}">Reset Password</a></p>
+            <p>If you did not request this, please ignore this email.</p>
+            """
+            app.logger.info(f"DEBUG: Email content: {html}")
+
+            try:
+                send_email_via_mailtrap(email, "Password Reset Request", html)
+                app.logger.info("Password reset email sent successfully via Gmail SMTP.")
+                flash('A password reset link has been sent to your email.', 'info')
+            except Exception as e:
+                app.logger.error(f"Failed to send password reset email via Gmail SMTP: {e}", exc_info=True)
+                flash('Failed to send password reset email. Please try again later.', 'danger')
+        else:
+            # Do not reveal if email is not registered
+            flash('A password reset link has been sent to your email.', 'info')
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except SignatureExpired:
+        flash('The password reset link has expired.', 'danger')
+        return redirect(url_for('forgot_password'))
+    except BadSignature:
+        flash('Invalid password reset link.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        if not password or not confirm_password:
+            flash('Please fill out all fields.', 'danger')
+            return redirect(url_for('reset_password', token=token))
+        if password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return redirect(url_for('reset_password', token=token))
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.password = generate_password_hash(password)
+            db.session.commit()
+            flash('Your password has been updated. Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('User not found.', 'danger')
+            return redirect(url_for('forgot_password'))
+
+    return render_template('reset_password.html')
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -319,6 +402,29 @@ def get_incident(incident_id):
         'report_date': incident.report_date.strftime('%Y-%m-%d %H:%M:%S'),
         'file_paths': incident.file_paths
     })
+
+SMTP_SERVER = 'smtp.gmail.com'  # Gmail SMTP server
+SMTP_PORT = 587  # Gmail SMTP port
+EMAIL_SENDER = 'christinrimal@gmail.com'  # Your Gmail address
+EMAIL_PASSWORD = 'dtzr nfaa vrcw zduq'  # Replace with your app password or Gmail password
+
+def send_test_email():
+    message = MIMEMultipart('alternative')
+    message['Subject'] = 'Test Email'
+    message['From'] = EMAIL_SENDER
+    message['To'] = 'recipient@example.com'  # Replace with your email
+    message.attach(MIMEText('<p>This is a test email.</p>', 'html'))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, 'recipient@example.com', message.as_string())
+            print("Test email sent successfully.")
+    except Exception as e:
+        print(f"Error sending test email: {e}")
+
+# send_test_email()
 
 if __name__ == '__main__':
     app.run(debug=True)

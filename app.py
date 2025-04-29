@@ -61,12 +61,6 @@ def index():
 def favicon():
     return app.send_static_file('favicon.ico')
 
-@app.route('/<page>')
-def serve_page(page):
-    if page.endswith('.html'):
-        return render_template(page)
-    return render_template(f'{page}.html')
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -151,19 +145,26 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
 
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
-            # Successful login
-            session['user_id'] = user.id
-            logging.info(f"User {email} logged in successfully. Session user_id set to {user.id}")
-            print(f"DEBUG: User {email} logged in, session user_id: {session.get('user_id')}")
-            return redirect(url_for('profile'))
-        else:
-            logging.warning(f"Failed login attempt for email: {email}")
-            flash('Invalid email or password. Please try again.', 'danger')
+            user = User.query.filter_by(email=email).first()
+            if user and check_password_hash(user.password, password):
+                # Successful login
+                session['user_id'] = user.id
+                logging.info(f"User {email} logged in successfully. Session user_id set to {user.id}")
+                print(f"DEBUG: User {email} logged in, session user_id: {session.get('user_id')}")
+                redirect_url = url_for('profile')
+                print(f"DEBUG: Redirecting to {redirect_url}")
+                return redirect(redirect_url)
+            else:
+                logging.warning(f"Failed login attempt for email: {email}")
+                flash('Invalid email or password. Please try again.', 'danger')
+                return redirect(url_for('login'))
+        except Exception as e:
+            logging.error(f"Exception during login: {e}")
+            flash('An error occurred during login. Please try again later.', 'danger')
             return redirect(url_for('login'))
 
     return render_template('login.html')
@@ -189,6 +190,14 @@ from flask import session
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/report_incident')
+def report_incident():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to report an incident.', 'warning')
+        return redirect(url_for('login'))
+    return render_template('report.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

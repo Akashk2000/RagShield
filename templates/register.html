@@ -49,7 +49,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
         </ul>
       </div>
     </div>
@@ -101,7 +101,7 @@
       <button type="submit" class="btn btn-primary w-100">Register</button>
 
       <p class="text-center mt-3">
-        Already have an account? <a href="login.html">Login here</a>
+        Already have an account? <a href="{{ url_for('login') }}">Login here</a>
       </p>
     </form>
   </main>
@@ -147,6 +147,6 @@
       reader.readAsDataURL(file);
     });
   </script>
-  <img src="{{ url_for('static', filename='images/ragging.jpg') }}" alt="Ragging">
+  <!-- Removed the image below the footer as per user request -->
 </body>
 </html>

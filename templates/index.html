@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="RagShield is an initiative to create a safe, ragging-free campus for students. Join the movement to report incidents and ensure student safety.">
-    <meta name="keywords" content="anti-ragging, student safety, campus, RagShield, zero tolerance, harassment, UGC">
-    <meta name="author" content="RagShield Team">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="RagShield is an initiative to create a safe, ragging-free campus for students. Join the movement to report incidents and ensure student safety." />
+    <meta name="keywords" content="anti-ragging, student safety, campus, RagShield, zero tolerance, harassment, UGC" />
+    <meta name="author" content="RagShield Team" />
 
     <title>RagShield | Home</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
     <script src="{{ url_for('static', filename='js/emergency.js') }}"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Optional: Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
         /* Example inline styles for the hero section */
@@ -77,26 +79,51 @@
         .founder-card:hover h4 {
         color: #0d6efd; /* Bootstrap primary blue */
         }
-
     </style>
 </head>
-<body>
+<body style="padding-top: 70px;">
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
     <div class="container">
-      <a class="navbar-brand" href="/">RagShield</a>
+  <a class="navbar-brand" href="{{ url_for('index') }}">RagShield</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <!-- Public navigation -->
-          <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
-          <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}" id="navProfile">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('report_incident') }}" id="navReportIncident">Report Incident</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}" id="navLogout">Logout</a></li>
+          {% if not session.get('user_id') %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}" id="navLogin">Login</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>
   </nav>
+
+  {% if session.get('user_id') %}
+  <!-- Emergency Button -->
+
+  <!-- Emergency Modal -->
+  <div class="modal fade" id="emergencyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Emergency</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          Send emergency alert with your current location?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button id="confirmEmergency" type="button" class="btn btn-danger btn-sm">Yes, Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Hero Section -->
   <section class="hero d-flex align-items-center">
@@ -105,102 +132,101 @@
       <h1 class="display-3 fw-bold">Empowering Students</h1>
       <p class="lead">Combating Ragging and Ensuring Safety</p>
       <div class="mt-4">
-        <a href="/register" class="btn btn-warning btn-lg mx-2">Register Now</a>
-        <a href="/login" class="btn btn-secondary btn-lg mx-2">Login</a>
+        {% if not session.get('user_id') %}
+          <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg mx-2">Register Now</a>
+          <a href="#" class="btn btn-secondary btn-lg mx-2" id="heroLoginBtn">Login</a>
+        {% endif %}
       </div>
     </div>
   </section>
 
-    <!-- Important Alerts Section -->
-    <section class="container my-5" data-aos="fade-up">
+  <!-- Important Alerts Section -->
+  <section class="container my-5" data-aos="fade-up">
     <h2 class="text-center mb-4">Important Alerts</h2>
-  
+
     <div class="alert alert-danger" role="alert">
       <i class="fas fa-exclamation-triangle"></i> <strong>Zero Tolerance Policy:</strong> Any involvement in ragging activities will result in immediate suspension and legal action.
     </div>
-  
+
     <div class="alert alert-warning" role="alert">
       <i class="fas fa-phone"></i> <strong>24/7 Anti-Ragging Helpline:</strong> Students can call <a href="tel:18001805522" class="text-decoration-underline">1800-180-5522</a> for confidential support.
     </div>
-  
+
     <div class="alert alert-info" role="alert">
       <i class="fas fa-info-circle"></i> <strong>Orientation Session:</strong> New students are requested to attend the Anti-Ragging Awareness Session on <strong>July 5, 2025</strong>.
     </div>
-  
+
     <div class="alert alert-success" role="alert">
       <i class="fas fa-shield-alt"></i> <strong>Safe Campus Promise:</strong> Our campus is a recognized "Ragging-Free Zone" certified by UGC.
     </div>
+  </section>
+
+  <!-- About and Founders Section -->
+  <section class="container my-5" data-aos="fade-up">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h2>About RagShield</h2>
+          <p>At RagShield, we believe that education should be a journey of growth, not fear. Founded with a passion to eliminate the menace of ragging, RagShield offers students a safe, trusted platform to raise their voices and seek immediate help when needed.</p>
+
+          <p>Our initiative is built on the principles of <strong>confidentiality, empowerment, and action</strong>. Through a user-friendly interface, we enable students to report incidents anonymously, access verified anti-ragging guidelines based on UGC and government mandates, and connect to emergency assistance whenever necessary.</p>
+
+          <p>We are not just a reporting platform — we are a <strong>community-driven movement</strong> to create safer, kinder campuses where every student feels respected and protected.</p>
+        </div>
+        <div class="col-md-6 text-center">
+          <img src="https://www.view.edu.in/images/anti//anti.jpg" alt="Safe Campus" class="img-fluid rounded shadow" style="max-height:400px; object-fit:cover;">
+          <p class="mt-3 fst-italic text-muted">"Together we stand. Together we shield."</p>
+        </div>
+      </div>
+
+      <!-- Mission, Vision, and Core Values -->
+      <div class="row text-center mt-5">
+        <div class="col-md-4">
+          <div class="p-4 shadow rounded bg-white">
+            <i class="fas fa-bullseye fa-2x text-primary mb-3"></i>
+            <h5>Our Mission</h5>
+            <p class="text-muted">To eradicate ragging by empowering students with knowledge, voice, and immediate support mechanisms.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 shadow rounded bg-white">
+            <i class="fas fa-eye fa-2x text-success mb-3"></i>
+            <h5>Our Vision</h5>
+            <p class="text-muted">A future where every campus is a beacon of safety, inclusion, and dignity for all learners.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-4 shadow rounded bg-white">
+            <i class="fas fa-handshake fa-2x text-warning mb-3"></i>
+            <h5>Our Core Values</h5>
+            <p class="text-muted">Trust, Confidentiality, Immediate Action, Empathy, and Empowerment.</p>
+          </div>
+        </div>
+      </div>
     </section>
-  
-    <!-- About and Founders Section -->
-    <section class="container my-5" data-aos="fade-up">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <h2>About RagShield</h2>
-            <p>At RagShield, we believe that education should be a journey of growth, not fear. Founded with a passion to eliminate the menace of ragging, RagShield offers students a safe, trusted platform to raise their voices and seek immediate help when needed.</p>
-      
-            <p>Our initiative is built on the principles of <strong>confidentiality, empowerment, and action</strong>. Through a user-friendly interface, we enable students to report incidents anonymously, access verified anti-ragging guidelines based on UGC and government mandates, and connect to emergency assistance whenever necessary.</p>
-      
-            <p>We are not just a reporting platform — we are a <strong>community-driven movement</strong> to create safer, kinder campuses where every student feels respected and protected.</p>
+
+  <!-- Founders' Message Section -->
+  <section class="bg-light py-5" data-aos="fade-up">
+      <div class="container">
+        <h2 class="text-center mb-5">What Our Founders Say</h2>
+        <div class="row g-5">
+          <div class="col-md-6 text-center">
+            <div class="founder-card p-4 shadow rounded">
+              <img src="/static/images/akash.png" class="rounded-circle mb-3" alt="Akash Khadka" style="width:100px; height:100px; object-fit:cover;">
+              <h4>Akash Khadka</h4>
+              <p class="text-muted fst-italic">"Every student deserves a safe space to learn, grow, and thrive without fear. RagShield is our commitment to make campuses safer, one report at a time."</p>
+            </div>
           </div>
           <div class="col-md-6 text-center">
-            <img src="https://www.view.edu.in/images/anti//anti.jpg" alt="Safe Campus" class="img-fluid rounded shadow" style="max-height:400px; object-fit:cover;">
-            <p class="mt-3 fst-italic text-muted">"Together we stand. Together we shield."</p>
-          </div>
-        </div>
-      
-        <!-- Mission, Vision, and Core Values -->
-        <div class="row text-center mt-5">
-          <div class="col-md-4">
-            <div class="p-4 shadow rounded bg-white">
-              <i class="fas fa-bullseye fa-2x text-primary mb-3"></i>
-              <h5>Our Mission</h5>
-              <p class="text-muted">To eradicate ragging by empowering students with knowledge, voice, and immediate support mechanisms.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="p-4 shadow rounded bg-white">
-              <i class="fas fa-eye fa-2x text-success mb-3"></i>
-              <h5>Our Vision</h5>
-              <p class="text-muted">A future where every campus is a beacon of safety, inclusion, and dignity for all learners.</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="p-4 shadow rounded bg-white">
-              <i class="fas fa-handshake fa-2x text-warning mb-3"></i>
-              <h5>Our Core Values</h5>
-              <p class="text-muted">Trust, Confidentiality, Immediate Action, Empathy, and Empowerment.</p>
+            <div class="founder-card p-4 shadow rounded">
+              <img src="/static/images/bipin.png" class="rounded-circle mb-3" alt="Bipin Pandey" style="width:100px; height:100px; object-fit:cover;">
+              <h4>Bipin Pandey</h4>
+              <p class="text-muted fst-italic">"Silence encourages the tormentor, never the tormented. Through RagShield, we aim to give every voice the power to stand tall against ragging."</p>
             </div>
           </div>
         </div>
-      </section>
-           
+      </div>
+    </section>
 
-    <!-- Founders' Message Section -->
-    <section class="bg-light py-5" data-aos="fade-up">
-        <div class="container">
-          <h2 class="text-center mb-5">What Our Founders Say</h2>
-          <div class="row g-5">
-            <div class="col-md-6 text-center">
-              <div class="founder-card p-4 shadow rounded">
-                <img src="/static/images/akash.png" class="rounded-circle mb-3" alt="Akash Khadka" style="width:100px; height:100px; object-fit:cover;">
-                <h4>Akash Khadka</h4>
-                <p class="text-muted fst-italic">"Every student deserves a safe space to learn, grow, and thrive without fear. RagShield is our commitment to make campuses safer, one report at a time."</p>
-              </div>
-            </div>
-            <div class="col-md-6 text-center">
-              <div class="founder-card p-4 shadow rounded">
-                <img src="/static/images/bipin.png" class="rounded-circle mb-3" alt="Bipin Pandey" style="width:100px; height:100px; object-fit:cover;">
-                <h4>Bipin Pandey</h4>
-                <p class="text-muted fst-italic">"Silence encourages the tormentor, never the tormented. Through RagShield, we aim to give every voice the power to stand tall against ragging."</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-  
-  
   <!-- Anti-Ragging Guidelines Section -->
   <section class="container my-5" data-aos="fade-up">
     <div class="row">
@@ -224,7 +250,7 @@
               </div>
             </div>
           </div>
-  
+
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingTwo">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
@@ -242,7 +268,7 @@
               </div>
             </div>
           </div>
-  
+
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingThree">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
@@ -265,74 +291,233 @@
       </div>
     </div>
   </section>
-  
 
-     <!-- Success Stories Section -->
-     <section class="container my-5" data-aos="fade-up">
-        <h2 class="text-center mb-5">Success Stories</h2>
-      
-        <div class="row">
-          <!-- Story 1 -->
-          <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-              <img src="/static/images/Rishav.png" class="card-img-top" alt="Student 1" style="height:250px; object-fit:cover;">
-              <div class="card-body">
-                <h5 class="card-title">Rishav Paudel</h5>
-                <h6 class="card-subtitle mb-2 text-muted">XYZ University</h6>
-                <p class="card-text">"Thanks to RagShield, I could report an incident anonymously and received immediate help. I feel safe and empowered on campus now!"</p>
-              </div>
-            </div>
-          </div>
-      
-          <!-- Story 2 -->
-          <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-              <img src="/static/images/Sneha.jpg" class="card-img-top" alt="Student 2" style="height:250px; object-fit:cover;">
-              <div class="card-body">
-                <h5 class="card-title">Sneha Thapa</h5>
-                <h6 class="card-subtitle mb-2 text-muted">ABC Institute of Technology</h6>
-                <p class="card-text">"When I faced harassment during my first week, RagShield connected me to counselors and authorities. Today, I mentor juniors with confidence."</p>
-              </div>
-            </div>
-          </div>
-      
-          <!-- Story 3 -->
-          <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
-              <img src="/static/images/Amar.png" class="card-img-top" alt="Student 3" style="height:250px; object-fit:cover;">
-              <div class="card-body">
-                <h5 class="card-title">Amar Raw</h5>
-                <h6 class="card-subtitle mb-2 text-muted">PQR Medical College</h6>
-                <p class="card-text">"RagShield gave me the courage to speak up. It's not just an app, it's a movement for safer campuses everywhere!"</p>
-              </div>
-            </div>
+  <!-- Success Stories Section -->
+  <section class="container my-5" data-aos="fade-up">
+    <h2 class="text-center mb-5">Success Stories</h2>
+
+    <div class="row">
+      <!-- Story 1 -->
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <img src="/static/images/Rishav.png" class="card-img-top" alt="Student 1" style="height:250px; object-fit:cover;">
+          <div class="card-body">
+            <h5 class="card-title">Rishav Paudel</h5>
+            <h6 class="card-subtitle mb-2 text-muted">XYZ University</h6>
+            <p class="card-text">"Thanks to RagShield, I could report an incident anonymously and received immediate help. I feel safe and empowered on campus now!"</p>
           </div>
         </div>
-        </section>
-      
-        <!-- Call to Action Section -->
-        <section class="bg-warning text-center py-5" data-aos="zoom-in">
-        <div class="container">
-          <h2 class="fw-bold mb-3">Be the Next Success Story!</h2>
-          <p class="lead mb-4">Join thousands of students who chose safety, empowerment, and freedom. Report incidents, seek help, and inspire change.</p>
-          <a href="register.html" class="btn btn-primary btn-lg">Register Now</a>
+      </div>
+
+      <!-- Story 2 -->
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <img src="/static/images/Sneha.jpg" class="card-img-top" alt="Student 2" style="height:250px; object-fit:cover;">
+          <div class="card-body">
+            <h5 class="card-title">Sneha Thapa</h5>
+            <h6 class="card-subtitle mb-2 text-muted">ABC Institute of Technology</h6>
+            <p class="card-text">"When I faced harassment during my first week, RagShield connected me to counselors and authorities. Today, I mentor juniors with confidence."</p>
+          </div>
         </div>
-        </section>
-      
+      </div>
+
+      <!-- Story 3 -->
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+          <img src="/static/images/Amar.png" class="card-img-top" alt="Student 3" style="height:250px; object-fit:cover;">
+          <div class="card-body">
+            <h5 class="card-title">Amar Raw</h5>
+            <h6 class="card-subtitle mb-2 text-muted">PQR Medical College</h6>
+            <p class="card-text">"RagShield gave me the courage to speak up. It's not just an app, it's a movement for safer campuses everywhere!"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section class="bg-warning text-center py-5" data-aos="zoom-in">
+    <div class="container">
+      <h2 class="fw-bold mb-3">Be the Next Success Story!</h2>
+      <p class="lead mb-4">Join thousands of students who chose safety, empowerment, and freedom. Report incidents, seek help, and inspire change.</p>
+      {% if not session.get('user_id') %}
+      <!-- Removed Register Now button as per user request -->
+      <!-- <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register Now</a> -->
+      {% endif %}
+    </div>
+  </section>
 
   <!-- Footer -->
-  <footer class="bg-primary text-white text-center py-4">
-    <div class="container">
-      <p>&copy; 2025 RagShield. All Rights Reserved.</p>
-      <p>Contact us: 
-        <a href="mailto:support@ragshield.com" class="text-white"><i class="fas fa-envelope"></i> support@ragshield.com</a>
-      </p>
-      <p>Phone: 
-        <a href="tel:+919999999999" class="text-white"><i class="fas fa-phone-alt"></i> +91 99999 99999</a>
-      </p>
-    </div>
+  <footer class="bg-primary text-white text-center py-3 mt-auto">
+    <small>&copy; 2025 RagShield. All Rights Reserved.</small>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  <!-- Register Modal -->
+  {% if not session.get('user_id') %}
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registerModalLabel">Register</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" enctype="multipart/form-data" action="{{ url_for('register') }}" id="registerFormModal">
+            <div class="mb-3">
+              <label for="nameModal" class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="nameModal" name="name" required placeholder="Enter your full name">
+            </div>
+            <div class="mb-3">
+              <label for="emailModal" class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="emailModal" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="mb-3">
+              <label for="passwordModal" class="form-label">Password</label>
+              <input type="password" class="form-control" id="passwordModal" name="password" required placeholder="Create a password">
+            </div>
+            <div class="mb-3">
+              <label for="college_nameModal" class="form-label">College Name</label>
+              <input type="text" class="form-control" id="college_nameModal" name="college_name" required placeholder="Enter your college name">
+            </div>
+            <div class="mb-3">
+              <label for="id_cardModal" class="form-label">Upload ID Card <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="id_cardModal" name="id_card" required accept="image/*">
+              <small class="form-text text-muted">Please upload a clear photo of your college ID card.</small>
+            </div>
+            <!-- Preview placeholder -->
+            <div class="mt-3 text-center">
+              <img id="idCardPreviewModal" src="#" alt="ID Card Preview" class="img-fluid rounded" style="max-height:200px; display:none;"/>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+          </form>
+          <div class="mt-3 text-center">
+            <small>Already have an account? <a href="#" id="showLoginLinkModal">Login here</a></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loginModalLabel">Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{{ url_for('login') }}" id="loginFormModal">
+            <div class="mb-3">
+              <label for="emailLoginModal" class="form-label">Email Address</label>
+              <input type="email" class="form-control" id="emailLoginModal" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="mb-3">
+              <label for="passwordLoginModal" class="form-label">Password</label>
+              <input type="password" class="form-control" id="passwordLoginModal" name="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+          </form>
+          <div class="mt-3 text-center">
+            <small>Don't have an account? <a href="#" id="showRegisterLinkModal">Register here</a></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Show register modal on page load if user not logged in
+    var registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+    var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+
+    window.addEventListener('load', function() {
+      registerModal.show();
+    });
+
+    // Fix modal close button issue by ensuring modal instance is properly initialized
+    document.querySelector('#registerModal .btn-close').addEventListener('click', function() {
+      registerModal.hide();
+    });
+    document.querySelector('#loginModal .btn-close').addEventListener('click', function() {
+      loginModal.hide();
+    });
+
+    // ID card preview for modal form
+    document.getElementById('id_cardModal').addEventListener('change', function(event){
+      const preview = document.getElementById('idCardPreviewModal');
+      const file = event.target.files[0];
+      if (!file) {
+        preview.style.display = 'none';
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        event.target.value = '';
+        preview.style.display = 'none';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Show login modal when clicking login link in navbar
+    document.getElementById('navLogin').addEventListener('click', function(e) {
+      e.preventDefault();
+      loginModal.show();
+    });
+
+    // Switch between register and login modals with proper hide/show to avoid overlap
+    document.getElementById('showLoginLinkModal').addEventListener('click', function(e) {
+      e.preventDefault();
+      registerModal.hide();
+      registerModal._element.addEventListener('hidden.bs.modal', function onHidden() {
+        loginModal.show();
+        registerModal._element.removeEventListener('hidden.bs.modal', onHidden);
+      });
+    });
+    document.getElementById('showRegisterLinkModal').addEventListener('click', function(e) {
+      e.preventDefault();
+      loginModal.hide();
+      loginModal._element.addEventListener('hidden.bs.modal', function onHidden() {
+        registerModal.show();
+        loginModal._element.removeEventListener('hidden.bs.modal', onHidden);
+      });
+    });
+
+      // Modify protected links behavior to show alert message instead of modal popup
+      document.addEventListener('DOMContentLoaded', function() {
+        var userLoggedIn = JSON.parse('{{ "true" if session and session.get("user_id") else "false" }}');
+        if (!userLoggedIn) {
+          var protectedLinks = ['navProfile', 'navReportIncident', 'navLogout'];
+          protectedLinks.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+              el.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Please register or login first to access this page.');
+              });
+            }
+          });
+        }
+      });
+
+      // Show login modal when clicking login button in hero section
+      document.addEventListener('DOMContentLoaded', function() {
+        var heroLoginBtn = document.getElementById('heroLoginBtn');
+        var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        if (heroLoginBtn) {
+          heroLoginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginModal.show();
+          });
+        }
+      });
+  </script>
+  {% endif %}
+  </body>
+  </html>

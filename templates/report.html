@@ -5,38 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Report Incident | RagShield</title>
 
-  <!-- Leaflet CSS (must come first) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha384-sA+zgD1vy+SbI4yxfQW64szY02ypjwtLwbFyhRdn+4h+rQ3xMpruLVNNwMLyJmZg"
-    crossorigin=""
-  />
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="/static/css/styles.css"/>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"/>
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     html, body { height: 100%; margin: 0; }
     body { display: flex; flex-direction: column; }
     main { flex: 1; }
 
-    /* Force map height */
-    #map { height: 300px !important; width: 100%; border:1px solid #ccc; border-radius:8px; }
+    /* Map iframe container styles */
+    .location-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+      overflow: hidden;
+      position: relative;
+    }
 
-    /* Fade-in */
-    .fade-in { opacity:0; transform:translateY(20px); animation:fadeIn 0.8s ease-out forwards; }
-    @keyframes fadeIn { to { opacity:1; transform:translateY(0); } }
+    #map {
+      height: 300px; /* Set the height of the map */
+      width: 100%; /* Full width of the container */
+      max-width: 600px; /* Limit the maximum width */
+      margin: 0 auto; /* Center the map horizontally */
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    /* Fade-in animation */
+    .fade-in { opacity: 0; transform: translateY(20px); animation: fadeIn 0.8s ease-out forwards; }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
     /* Rounded inputs/buttons */
-    .form-control, .btn-danger, .btn-outline-primary { border-radius:25px; }
-    .form-label { font-weight:500; }
+    .form-control, .btn-danger, .btn-outline-primary { border-radius: 25px; }
+    .form-label { font-weight: 500; }
 
     /* Toast */
-    .toast { position:fixed; top:20px; right:20px; z-index:9999; display:none; }
+    .toast { position: fixed; top: 20px; right: 20px; z-index: 9999; display: none; }
   </style>
 </head>
 
@@ -50,8 +65,8 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="login.html">Logout</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('profile') }}">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
       </div>
     </div>
@@ -65,29 +80,36 @@
     </p>
 
     <form id="reportForm" method="POST" action="report.html" enctype="multipart/form-data">
-      <!-- Description (required) -->
       <div class="mb-3">
         <label for="description" class="form-label">Incident Description</label>
         <textarea class="form-control" id="description" name="description" rows="5" required placeholder="Describe the incident..."></textarea>
       </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-3">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
-      <!-- Location with map + visible required field -->
       <div class="mb-3">
         <label class="form-label">Location of Incident <span class="text-danger">*</span></label>
-        <div id="map"></div>
-        <div class="d-flex justify-content-between mt-2">
-          <button type="button" class="btn btn-sm btn-outline-primary" id="locateBtn">
+        <div class="location-container">
+          <div id="map"></div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="useLocationBtn">
             <i class="fas fa-location-arrow"></i> Use my location
           </button>
-          <small class="form-text text-muted">Or drag the marker to the exact spot.</small>
+          <input type="text" id="locationInput" class="form-control mt-2" placeholder="Pick a location on the map" readonly required>
+          <input type="hidden" id="lat" name="latitude" value="27.7">
+          <input type="hidden" id="lng" name="longitude" value="85.3">
         </div>
-        <!-- Visible readonly input to enforce required -->
-        <input type="text" id="locationInput" class="form-control mt-2" placeholder="Pick a location on the map" readonly required>
-        <input type="hidden" id="lat" name="latitude">
-        <input type="hidden" id="lng" name="longitude">
       </div>
 
-      <!-- File upload (required) -->
       <div class="mb-3">
         <label for="files" class="form-label">Upload Supporting File <span class="text-danger">*</span></label>
         <input type="file" class="form-control" id="files" name="files" accept="image/*,video/*" required>
@@ -116,58 +138,46 @@
 
   <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha384-Uu1D5uxRq6kR/UPvgtTH1ycQm/zbzd8NigUcLFIs9qcqj/gSPMMD3/K2CEazPnY7"
-    crossorigin=""
-  ></script>
 
   <script>
-    // Initialize map
-    var map = L.map('map').setView([27.7,85.3],13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{ attribution:'&copy; OpenStreetMap' }).addTo(map);
+  // Initialize the map
+  const map = L.map('map').setView([27.7, 85.3], 13); // Default location (latitude, longitude)
 
-    // Draggable marker
-    var marker = L.marker([27.7,85.3],{draggable:true}).addTo(map);
-    marker.on('move',function(e){
-      var ll=e.target.getLatLng();
-      document.getElementById('lat').value=ll.lat;
-      document.getElementById('lng').value=ll.lng;
-      document.getElementById('locationInput').value=ll.lat.toFixed(5)+', '+ll.lng.toFixed(5);
-    });
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
 
-    // Use my location
-    document.getElementById('locateBtn').addEventListener('click',function(){
-      if(!navigator.geolocation) return alert('Geolocation not supported');
-      navigator.geolocation.getCurrentPosition(function(pos){
-        var lat=pos.coords.latitude, lon=pos.coords.longitude;
-        map.setView([lat,lon],16);
-        marker.setLatLng([lat,lon]).fire('move');
-      },()=>alert('Unable to retrieve location'));
-    });
+  // Add a marker to the map
+  const marker = L.marker([27.7, 85.3]).addTo(map); // Default marker position
 
-    // Ensure map redraw after fade-in
-    map.whenReady(()=>setTimeout(()=>map.invalidateSize(),800));
+  // Handle "Use My Location" button click
+  document.getElementById('useLocationBtn').addEventListener('click', () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-    // Toast helper
-    function showToast(msg,type='success'){
-      var t=document.getElementById('toastMessage'),
-          txt=document.getElementById('toastText');
-      t.className='toast bg-'+type+' text-white';
-      txt.textContent=msg; t.style.display='block';
-      setTimeout(()=>t.style.display='none',3000);
+        // Update the marker position
+        marker.setLatLng([lat, lng]);
+
+        // Update the map view
+        map.setView([lat, lng], 13);
+
+        // Update the hidden input fields
+        document.getElementById('lat').value = lat.toFixed(5);
+        document.getElementById('lng').value = lng.toFixed(5);
+
+        // Update the visible location input
+        document.getElementById('locationInput').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      }, () => {
+        alert('Unable to retrieve your location.');
+      });
+    } else {
+      alert('Geolocation is not supported by your browser.');
     }
-
-    // Form validation
-    document.getElementById('reportForm').addEventListener('submit',function(e){
-      var desc=document.getElementById('description').value.trim(),
-          loc=document.getElementById('locationInput').value.trim(),
-          files=document.getElementById('files').files;
-      if(!desc){ e.preventDefault(); showToast('Please enter a description.','danger'); return; }
-      if(!loc){ e.preventDefault(); showToast('Please pick a location on the map.','danger'); return; }
-      if(files.length===0){ e.preventDefault(); showToast('Please upload a supporting file.','danger'); return; }
-      showToast('Incident Reported Successfully!','success');
-    });
-  </script>
+  });
+</script>
 </body>
 </html>

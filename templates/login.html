@@ -68,6 +68,20 @@
    
   <main class="container my-5 fade-in">
     <h1 class="text-center mb-4">Login</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="container mb-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <form method="POST" action="/login" id="loginForm">
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
@@ -85,6 +99,9 @@
 
       <p class="text-center mt-3">
         Don't have an account? <a href="register.html">Register here</a>
+      </p>
+      <p class="text-center mt-2">
+        <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
       </p>
     </form>
   </main>
@@ -106,24 +123,7 @@
 
   <!-- Custom Script for Button Behavior -->
   <script>
-    const loginBtn = document.getElementById('loginBtn');
-
-    loginBtn.addEventListener('click', function(e) {
-      // Allow form submission to proceed normally
-      // Remove spinner and enable button after 5 seconds as fallback
-      const loginText = document.getElementById('loginText');
-      const loginSpinner = document.getElementById('loginSpinner');
-
-      loginText.textContent = 'Logging in...';
-      loginSpinner.classList.remove('d-none');
-      loginBtn.disabled = true;
-
-      setTimeout(() => {
-        loginText.textContent = 'Login';
-        loginSpinner.classList.add('d-none');
-        loginBtn.disabled = false;
-      }, 5000);
-    });
+    // Removed AJAX login to test normal form submission and redirection
   </script>
 </body>
 </html>

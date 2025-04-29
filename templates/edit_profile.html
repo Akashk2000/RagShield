@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Profile | RagShield</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+    }
+    .form-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <h2 class="mb-4 text-center">Edit Profile</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-4">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="form-container">
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('edit_profile') }}">
+      <div class="mb-3">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address (cannot be changed)</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" readonly>
+      </div>
+      <div class="mb-3">
+        <label for="college_name" class="form-label">College Name</label>
+        <input type="text" class="form-control" id="college_name" name="college_name" value="{{ user.college_name }}" required>
+      </div>
+      <div class="mb-3">
+        <label for="id_card" class="form-label">ID Card (Upload new to replace)</label>
+        <input type="file" class="form-control" id="id_card" name="id_card" accept=".png,.jpg,.jpeg,.gif,.pdf">
+        {% if user.id_card %}
+          <small>Current file: {{ user.id_card }}</small>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{{ url_for('profile') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

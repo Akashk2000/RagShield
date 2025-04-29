@@ -79,7 +79,7 @@
       <strong>Note:</strong> Submitting false information is strictly prohibited and may lead to consequences.
     </p>
 
-    <form id="reportForm" method="POST" action="report.html" enctype="multipart/form-data">
+    <form id="reportForm" method="POST" action="{{ url_for('report_incident') }}" enctype="multipart/form-data">
       <div class="mb-3">
         <label for="description" class="form-label">Incident Description</label>
         <textarea class="form-control" id="description" name="description" rows="5" required placeholder="Describe the incident..."></textarea>

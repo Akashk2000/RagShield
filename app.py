@@ -40,6 +40,7 @@ class Incident(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     description = db.Column(db.Text, nullable=False)
     file_paths = db.Column(db.Text)
+    status = db.Column(db.String(20), default='pending')  # Added status column
     report_date = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 class EmergencyLocation(db.Model):
@@ -201,9 +202,8 @@ def profile():
     
     # Query stats for the user
     total_reports = Incident.query.filter_by(user_id=user_id).count()
-    # Since Incident model has no 'status' attribute, set pending and resolved to 0
-    pending_reports = 0
-    resolved_reports = 0
+    pending_reports = Incident.query.filter_by(user_id=user_id, status='pending').count()
+    resolved_reports = Incident.query.filter_by(user_id=user_id, status='resolved').count()
     stats = {
         'total_reports': total_reports,
         'pending_reports': pending_reports,
@@ -222,12 +222,42 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-@app.route('/report_incident')
+@app.route('/report_incident', methods=['GET', 'POST'])
 def report_incident():
     user_id = session.get('user_id')
     if not user_id:
         flash('Please log in to report an incident.', 'warning')
         return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        description = request.form.get('description')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        file = request.files.get('files')
+
+        if not description or not latitude or not longitude or not file:
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('report_incident'))
+
+        # Save the uploaded file with a unique filename
+        import uuid
+        ext = file.filename.rsplit('.', 1)[-1] if '.' in file.filename else ''
+        filename = f"{uuid.uuid4().hex}.{ext}" if ext else uuid.uuid4().hex
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Save incident to database
+        new_incident = Incident(
+            user_id=user_id,
+            description=description,
+            file_paths=filename
+        )
+        db.session.add(new_incident)
+        db.session.commit()
+
+        flash('Report submitted successfully!', 'success')
+        return redirect(url_for('report_incident'))
+
     return render_template('report.html')
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
@@ -238,6 +268,57 @@ def forgot_password():
         flash('If this email is registered, a password reset link has been sent.', 'info')
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Please log in to edit your profile.', 'warning')
+        return redirect(url_for('login'))
+
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        college_name = request.form.get('college_name')
+        id_card = request.files.get('id_card')
+
+        if not name or not college_name:
+            flash('Name and College Name are required.', 'danger')
+            return redirect(url_for('edit_profile'))
+
+        user.name = name
+        user.college_name = college_name
+
+        if id_card:
+            import uuid
+            ext = os.path.splitext(id_card.filename)[1]
+            id_card_filename = f"{uuid.uuid4().hex}{ext}"
+            id_card_path = os.path.join(app.config['UPLOAD_FOLDER'], id_card_filename)
+            id_card.save(id_card_path)
+            user.id_card = id_card_filename
+
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('profile'))
+
+    return render_template('edit_profile.html', user=user)
+
+@app.route('/api/incident/<int:incident_id>')
+def get_incident(incident_id):
+    incident = Incident.query.get(incident_id)
+    if not incident:
+        return jsonify({'error': 'Incident not found'}), 404
+    return jsonify({
+        'id': incident.id,
+        'description': incident.description,
+        'status': incident.status,
+        'report_date': incident.report_date.strftime('%Y-%m-%d %H:%M:%S'),
+        'file_paths': incident.file_paths
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

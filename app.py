@@ -181,7 +181,21 @@ def profile():
     if not user:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
-    return render_template('profile.html', user=user)
+    
+    # Query stats for the user
+    total_reports = Incident.query.filter_by(user_id=user_id).count()
+    # Since Incident model has no 'status' attribute, set pending and resolved to 0
+    pending_reports = 0
+    resolved_reports = 0
+    stats = {
+        'total_reports': total_reports,
+        'pending_reports': pending_reports,
+        'resolved_reports': resolved_reports
+    }
+    # Query incidents for the user
+    incidents = Incident.query.filter_by(user_id=user_id).order_by(Incident.report_date.desc()).all()
+    
+    return render_template('profile.html', user=user, stats=stats, incidents=incidents)
 
 
 from flask import session
@@ -198,6 +212,15 @@ def report_incident():
         flash('Please log in to report an incident.', 'warning')
         return redirect(url_for('login'))
     return render_template('report.html')
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        # Here you can add logic to handle password reset, e.g., send reset email
+        flash('If this email is registered, a password reset link has been sent.', 'info')
+        return redirect(url_for('login'))
+    return render_template('forgot_password.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
